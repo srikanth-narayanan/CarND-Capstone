@@ -3,7 +3,6 @@
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
-
 import math
 
 '''
@@ -38,15 +37,29 @@ class WaypointUpdater(object):
 
         # TODO: Add other member variables you need below
 
+        # Initialise basic variables
+        self.current_position = None
+        self.waypoints = None
+
         rospy.spin()
 
     def pose_cb(self, msg):
+        '''
+        Call Back Function when Current Positions is received
+        '''
         # TODO: Implement
-        pass
+        self.current_position = msg.pose # Get Message
+        if self.waypoints is not None:
+            self.publish_waypoints() # Push New Calculated Waypoints ahead of the vehicle
 
     def waypoints_cb(self, waypoints):
+        '''
+        Call Back Function when waypoints are received. This function is called
+        only once as the entire waypoints are sent
+        '''
         # TODO: Implement
-        pass
+        if self.waypoints is None:
+            self.waypoints = waypoints.waypoints
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
@@ -70,6 +83,45 @@ class WaypointUpdater(object):
             wp1 = i
         return dist
 
+    def _calc_dist(self, pos1, pos2):
+        '''
+        A helper method to return distance between two waypoints
+        '''
+        dist = math.sqrt((pos1.x - pos2.x)**2 + (pos1.y - pos2.y)**2)
+        return dist
+
+    def get_closet_waypoint(self):
+        '''
+        This method determines the closet waypoint from the received current
+        position to the waypoint list.
+        '''
+        closest_distance = 999999 # Initialise very high value
+        closest_waypoint_idx = 0
+        for idx, waypoint in enumerate(self.waypoints):
+            temp_dist = self._calc_dist(self.current_position, waypoint.pose)
+            if (temp_dist < closest_distance):
+                closest_distance = temp_dist
+                closet_waypoint_idx = idx
+
+        return closet_waypoint_idx
+
+    def publish_waypoints(self):
+        '''
+        a main method where every thing is dealt. here after all calcs waypoints
+        are pushed to publish
+        '''
+        if self.current_position is not None:
+            closet_waypoint_idx = self.get_closet_waypoint()
+            forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
+
+            # Create a data type to publish forward lane points
+            # creating a same way to publish waypoint as done in Waypoint Loader file
+            drive_path = Lane()
+            drive_path.header.frame_id = '/world' # set the header name for waypoints
+            drive_path.header.stamp = rospy.Time(0) # Time Stamp for the published message
+            drive_path.waypoints = forward_waypoints
+            # Publish waypoints
+            self.final_waypoints_pub.publish(drive_path)
 
 if __name__ == '__main__':
     try:
