@@ -53,12 +53,49 @@ class DBWNode(object):
         self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
                                          BrakeCmd, queue_size=1)
 
+        # Other variables needed for the DBW node By default set it True.
+        # if a human driver takes over the subscribed node will change this status
+        self.DBW_ENABLED = True
+        self.current_twist_cmd = None
+        self.current_velocity = None
+
+
         # TODO: Create `TwistController` object
         # self.controller = TwistController(<Arguments you wish to provide>)
 
         # TODO: Subscribe to all the topics you need to
+        # Get Drive By Wire Status (Human or Auto)
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.on_receive_dbw_stat, queue_size=1)
+
+        # Get twist command messages
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.on_receive_twist_cmd, queue_size=10)
+
+        # Get current velocity status
+        rospy.Subscriber('/current_velocity', TwistStamped, self.on_receive_current_vel, queue_size=10)
 
         self.loop()
+
+    def on_receive_dbw_stat(self, dbw_enabled):
+        '''
+        A callback function to set the status of current drive by wire
+        '''
+        try:
+            self.DBW_ENABLED = bool(dbw_enabled.data) # cast it to python type
+        except:
+            self.DBW_ENABLED = dbw_enabled
+
+    def on_receive_twist_cmd(self, twist_cmd):
+        '''
+        A callback function to deal when twist_cmd data is received from the
+        waypoint follower.
+        '''
+        self.current_twist_cmd = twist_cmd
+
+    def on_receive_current_vel(self, current_velocity):
+        '''
+        A calback function to deal when current velocity is received
+        '''
+        self.current_velocity = current_velocity
 
     def loop(self):
         rate = rospy.Rate(50) # 50Hz
