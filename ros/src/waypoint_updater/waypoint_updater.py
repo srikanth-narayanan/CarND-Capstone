@@ -4,6 +4,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 import math
+import tf
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -98,11 +99,25 @@ class WaypointUpdater(object):
         closest_distance = 999999 # Initialise very high value
         closest_waypoint_idx = 0
         for idx, waypoint in enumerate(self.waypoints):
-            temp_dist = self._calc_dist(self.current_position, waypoint.pose)
+            temp_dist = self._calc_dist(self.current_position.position, waypoint.pose.pose.position)
             if (temp_dist < closest_distance):
                 closest_distance = temp_dist
                 closet_waypoint_idx = idx
 
+        # Calculate Heading
+        pos_map_x = self.waypoints[closet_waypoint_idx].pose.pose.position.x
+        pos_map_y = self.waypoints[closet_waypoint_idx].pose.pose.position.y
+
+        map_heading = math.atan2((pos_map_y - self.current_position.position.y), (pos_map_x - self.current_position.position.x))
+        # Get Yaw angle by transforming cartesian co-ordinates to pitch, roll and yaw
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion((self.current_position.orientation.x,
+                                                                     self.current_position.orientation.y,
+                                                                     self.current_position.orientation.z,
+                                                                     self.current_position.orientation.w))
+        delta_angle = abs(yaw - map_heading)
+        if delta_angle > (math.pi / 4):
+            closet_waypoint_idx += 1 # move it to the next point
+        
         return closet_waypoint_idx
 
     def publish_waypoints(self):
