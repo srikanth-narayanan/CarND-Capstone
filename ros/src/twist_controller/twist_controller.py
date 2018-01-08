@@ -38,7 +38,7 @@ class Controller(object):
         '''
         # TODO: Change the arg, kwarg list to suit your needs
         linear_velocity = abs(twist_cmd.twist.linear.x)
-        angular_velocity = twist_cmd.twist.twist.angular.z
+        angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
         steering_angle = self.yaw_control.get_steering(linear_velocity,
