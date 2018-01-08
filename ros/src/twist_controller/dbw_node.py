@@ -63,11 +63,10 @@ class DBWNode(object):
 
 
         # TODO: Create `TwistController` object
-        self.controller = TwistController(vehicle_mass, wheel_radius, wheel_base,
-                                          steer_ratio, max_lat_accel,
-                                          max_steer_angle, decel_limit,
-                                          accel_limit, brake_deadband,
-                                          fuel_capacity)
+        self.controller = Controller(vehicle_mass, wheel_radius, wheel_base,
+                                     steer_ratio, max_lat_accel,
+                                     max_steer_angle, decel_limit,
+                                     accel_limit, brake_deadband, fuel_capacity)
 
         # TODO: Subscribe to all the topics you need to
         # Get Drive By Wire Status (Human or Auto)
