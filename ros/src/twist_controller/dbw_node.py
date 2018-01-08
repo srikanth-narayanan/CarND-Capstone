@@ -59,11 +59,15 @@ class DBWNode(object):
         self.current_twist_cmd = None
         self.current_velocity = None
         self.previous_time = rospy.get_time() # Get the time during instantiantion
+        self.PID_RESET = True
 
 
         # TODO: Create `TwistController` object
-        self.controller = TwistController(wheel_radius, wheel_base, steer_ratio,
-                                          max_lat_accel, max_steer_angle)
+        self.controller = TwistController(vehicle_mass, wheel_radius, wheel_base,
+                                          steer_ratio, max_lat_accel,
+                                          max_steer_angle, decel_limit,
+                                          accel_limit, brake_deadband,
+                                          fuel_capacity)
 
         # TODO: Subscribe to all the topics you need to
         # Get Drive By Wire Status (Human or Auto)
@@ -104,17 +108,23 @@ class DBWNode(object):
         while not rospy.is_shutdown():
 
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
-            # Get
+            # Calculate Delta time for twist controller is called since instantiantion
+            current_time = rospy.get_time()
+            delta_time = current_time - self.previous_time
+            self.previous_time = current_time
 
-
-            # You should only publish the control commands if dbw is enabled
-            # throttle, brake, steering = self.controller.control(<proposed linear velocity>,
-            #                                                     <proposed angular velocity>,
-            #                                                     <current linear velocity>,
-            #                                                     <dbw status>,
-            #                                                     <any other argument you need>)
-            # if <dbw is enabled>:
-            #   self.publish(throttle, brake, steer)
+            # Predict values if DBW is enabled
+            if self.DBW_ENABLED and self.current_velocity is not None and self.current_twist_cmd is not None:
+                if self.PID_RESET:
+                    self.controller.reset_PID()
+                    self.PID_RESET = False
+                    # You should only publish the control commands if dbw is enabled
+                    throttle, brake, steering = self.controller.control(twist_cmd = self.current_twist_cmd,
+                                                                        current_velocity = self.current_velocity,
+                                                                        delta_time = delta_time)
+                    self.publish(throttle, brake, steer)
+                else:
+                    self.PID_RESET = True
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
