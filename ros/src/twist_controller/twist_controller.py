@@ -43,7 +43,7 @@ class Controller(object):
         # Using Yaw Controller get steering values
         steering_angle = self.yaw_control.get_steering(linear_velocity,
                                                        angular_velocity,
-                                                       current_velocity)
+                                                       current_velocity.twist.linear.x)
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
 
         # Using PID get throttle value
