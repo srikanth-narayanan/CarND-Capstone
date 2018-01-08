@@ -58,10 +58,12 @@ class DBWNode(object):
         self.DBW_ENABLED = True
         self.current_twist_cmd = None
         self.current_velocity = None
+        self.previous_time = rospy.get_time() # Get the time during instantiantion
 
 
         # TODO: Create `TwistController` object
-        # self.controller = TwistController(<Arguments you wish to provide>)
+        self.controller = TwistController(wheel_radius, wheel_base, steer_ratio,
+                                          max_lat_accel, max_steer_angle)
 
         # TODO: Subscribe to all the topics you need to
         # Get Drive By Wire Status (Human or Auto)
@@ -100,7 +102,11 @@ class DBWNode(object):
     def loop(self):
         rate = rospy.Rate(50) # 50Hz
         while not rospy.is_shutdown():
+
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
+            # Get
+
+
             # You should only publish the control commands if dbw is enabled
             # throttle, brake, steering = self.controller.control(<proposed linear velocity>,
             #                                                     <proposed angular velocity>,
