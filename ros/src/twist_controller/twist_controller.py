@@ -20,16 +20,17 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_control = PID(kp=0.290158, ki=9.1e-07, kd=0.1, mn=decel_limit, mx=accel_limit)
+        self.pid_control = PID(kp=0.9, ki=0.9, kd=0.1, mn=decel_limit, mx=accel_limit)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(tau=3, ts=1)
+        self.lowpass_steering = LowPassFilter(tau=0.5, ts=1)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(tau=3, ts=1)
+        self.lowpass_throttle = LowPassFilter(tau=0.5, ts=1)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
         self.brake_deadband = brake_deadband
         self.wheel_radius = wheel_radius
+        self.DEBUG_STAT = True
 
     def control(self, twist_cmd, current_velocity, delta_time):
         '''
@@ -65,6 +66,13 @@ class Controller(object):
 
             # Calculate Brake force as brake torque in Nm
             brake_torque = (self.vehicle_mass + self.fuel_capacity * GAS_DENSITY) * deccel_request * self.wheel_radius
+
+        if self.DEBUG_STAT:
+            rospy.loginfo("Steering_Unfilt : %f, Steering_Filt : %f, Accel_Unfilt : %f, Accel_Filt : %f, Brake : %f" % (steering_angle,
+                                                                                                                        steering_angle_filtered,
+                                                                                                                        pid_acceleration,
+                                                                                                                        a_ego_filtered,
+                                                                                                                        brake_torque))
 
         # Return throttle, brake, steer
         return throttle, brake_torque, steering_angle_filtered
