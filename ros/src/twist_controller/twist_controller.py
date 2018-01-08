@@ -54,7 +54,7 @@ class Controller(object):
         # caluculate brake force needed if acceleration is not positive
         if a_ego_filtered > 0.0:
             throttle = a_ego_filtered
-            brake = 0.0 # Ensure brakes are not applied when accelerating
+            brake_torque = 0.0 # Ensure brakes are not applied when accelerating
         else:
             throttle = 0.0 # Ensure throttle is not applied when braking
             deccel_request = abs(a_ego_filtered)
