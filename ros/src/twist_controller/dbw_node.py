@@ -121,7 +121,7 @@ class DBWNode(object):
                     throttle, brake, steering = self.controller.control(twist_cmd = self.current_twist_cmd,
                                                                         current_velocity = self.current_velocity,
                                                                         delta_time = delta_time)
-                    self.publish(throttle, brake, steer)
+                    self.publish(throttle, brake, steering)
                 else:
                     self.PID_RESET = True
             rate.sleep()
