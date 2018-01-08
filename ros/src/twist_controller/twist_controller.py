@@ -37,7 +37,7 @@ class Controller(object):
         brake and throttle.
         '''
         # TODO: Change the arg, kwarg list to suit your needs
-        linear_velocity = abs(twist_cmd.twist.twist.linear.x)
+        linear_velocity = abs(twist_cmd.twist.linear.x)
         angular_velocity = twist_cmd.twist.twist.angular.z
 
         # Using Yaw Controller get steering values
