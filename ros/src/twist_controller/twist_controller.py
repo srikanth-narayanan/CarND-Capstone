@@ -75,8 +75,7 @@ class Controller(object):
                                                                                                                         brake_torque))
 
         # Return throttle, brake, steer
-        #return throttle, brake_torque, steering_angle_filtered
-        return throttle, brake_torque, 0.0
+        return throttle, brake_torque, steering_angle_filtered
 
     def reset_PID(self):
         '''
