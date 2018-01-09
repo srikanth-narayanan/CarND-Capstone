@@ -3,13 +3,13 @@ class LowPassFilter(object):
     '''
     Basic Lowpass Filter
     '''
-    def __init__(self, alpha):
+    def __init__(self, tau, ts):
         '''
         Initialiser with directly with alpha.
         '''
-        self.a = alpha
-        self.b = 1 - alpha
-
+        self.a = 1. / (tau / ts + 1.)
+        self.b = tau / ts / (tau / ts + 1.);
+        
         self.last_val = 0.
         self.ready = False
 
