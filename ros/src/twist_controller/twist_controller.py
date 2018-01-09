@@ -22,9 +22,9 @@ class Controller(object):
         # Initialise PID Control
         self.pid_control = PID(kp=0.4, ki=0.0, kd=0.04, mn=decel_limit, mx=accel_limit)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(0.05)
+        self.lowpass_steering = LowPassFilter(0.96, 1)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(0.1)
+        self.lowpass_throttle = LowPassFilter(0.96, 1)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
