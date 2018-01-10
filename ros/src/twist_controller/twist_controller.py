@@ -24,7 +24,7 @@ class Controller(object):
         # Lowpass filter for Steering
         self.lowpass_steering = LowPassFilter(3, 1)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(0.2 1)
+        self.lowpass_throttle = LowPassFilter(0.2, 1)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
