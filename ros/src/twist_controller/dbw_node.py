@@ -73,10 +73,10 @@ class DBWNode(object):
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.on_receive_dbw_stat, queue_size=1)
 
         # Get twist command messages
-        rospy.Subscriber('/twist_cmd', TwistStamped, self.on_receive_twist_cmd, queue_size=5)
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.on_receive_twist_cmd, queue_size=1)
 
         # Get current velocity status
-        rospy.Subscriber('/current_velocity', TwistStamped, self.on_receive_current_vel, queue_size=5)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.on_receive_current_vel, queue_size=1)
 
         self.loop()
 
