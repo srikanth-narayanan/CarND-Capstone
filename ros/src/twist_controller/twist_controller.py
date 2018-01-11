@@ -81,4 +81,3 @@ class Controller(object):
         Resets the PID Controller
         '''
         self.pid_accel.reset()
-        self.pid_steer.reset()
