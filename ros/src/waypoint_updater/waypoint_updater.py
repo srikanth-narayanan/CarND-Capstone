@@ -22,7 +22,7 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-
+TARGET_V_EGO = 15 # MPH
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -128,6 +128,11 @@ class WaypointUpdater(object):
         if self.current_position is not None:
             closet_waypoint_idx = self.get_closet_waypoint()
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
+
+            # Set speed for waypoints
+            for i in range(len(forward_waypoints) - 1):
+                target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6
+                forward_waypoints[i].twist.twist.linear.x = target_v_ego_mps
 
             # Create a data type to publish forward lane points
             # creating a same way to publish waypoint as done in Waypoint Loader file
