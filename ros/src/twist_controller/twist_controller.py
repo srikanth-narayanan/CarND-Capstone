@@ -33,7 +33,7 @@ class Controller(object):
         self.wheel_radius = wheel_radius
         self.DEBUG_STAT = True
 
-    def control(self, twist_cmd, current_velocity, delta_time, cte):
+    def control(self, cte, twist_cmd, current_velocity, delta_time):
         '''
         Run controller based on current values to determine optimal steering,
         brake and throttle.
