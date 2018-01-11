@@ -20,11 +20,11 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_accel = PID(kp=0.4, ki=0.0, kd=0.04, mn=decel_limit, mx=accel_limit)
+        self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.5, mn=decel_limit, mx=accel_limit)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(0.5, 1.0)
+        self.lowpass_steering = LowPassFilter(3, 1.0)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(0.5, 1.0)
+        self.lowpass_throttle = LowPassFilter(3, 1.0)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
@@ -49,8 +49,8 @@ class Controller(object):
 
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
-        #a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
-        a_ego_filtered = pid_acceleration
+        a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
+        #a_ego_filtered = pid_acceleration
 
         # caluculate brake force needed if acceleration is not positive
         if a_ego_filtered > 0.0:
