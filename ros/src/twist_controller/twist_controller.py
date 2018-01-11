@@ -11,7 +11,7 @@ ONE_MPH = 0.44704
 class Controller(object):
     def __init__(self, vehicle_mass, wheel_radius, wheel_base, steer_ratio,
                  max_lat_accel, max_steer_angle, decel_limit, accel_limit,
-                 brake_deadband, fuel_capacity, min_speed=0.1):
+                 brake_deadband, fuel_capacity, min_speed=1):
         '''
         Initialise all controller as needed for calculations
         '''
@@ -20,7 +20,7 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_control = PID(kp=0.35, ki=0.0, kd=0.0, mn=decel_limit, mx=accel_limit)
+        self.pid_control = PID(kp=0.5, ki=0.05, kd=0.1, mn=-0.35, mx=0.35)
         # Lowpass filter for Steering
         self.lowpass_steering = LowPassFilter(0.07, 0.02)
         #Low pass filter for throttle
@@ -54,7 +54,8 @@ class Controller(object):
 
         # caluculate brake force needed if acceleration is not positive
         if a_ego_filtered > 0.0:
-            throttle = a_ego_filtered
+            #throttle = a_ego_filtered
+            throttle = pid_acceleration
             brake_torque = 0.0 # Ensure brakes are not applied when accelerating
         else:
             throttle = 0.0 # Ensure throttle is not applied when braking
@@ -75,7 +76,7 @@ class Controller(object):
                                                                                                                         brake_torque))
 
         # Return throttle, brake, steer
-        return throttle, brake_torque, steering_angle_filtered
+        return throttle, brake_torque, steering_angle
 
     def reset_PID(self):
         '''
