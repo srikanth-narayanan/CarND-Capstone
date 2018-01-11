@@ -7,6 +7,7 @@ from geometry_msgs.msg import TwistStamped
 import math
 
 from twist_controller import Controller
+import calc_steer_cte
 
 '''
 You can build this node only after you have built (or partially built) the `waypoint_updater` node.
@@ -60,6 +61,8 @@ class DBWNode(object):
         self.current_velocity = None
         self.previous_time = rospy.get_time() # Get the time during instantiantion
         self.PID_RESET = True
+        self.waypoints = None
+        self.current_position = None
 
 
         # TODO: Create `TwistController` object
@@ -78,7 +81,26 @@ class DBWNode(object):
         # Get current velocity status
         rospy.Subscriber('/current_velocity', TwistStamped, self.on_receive_current_vel, queue_size=1)
 
+        # Get Current Position here for CTE calcs
+        rospy.Subscriber('/current_pose', PoseStamped, self.on_receive_current_pose, queue_size=1)
+
+        # Get Current Waypoints
+        rospy.Subscriber('/final_waypoints', Lane, self.on_receive_waypoints, queue_size=1)
+
         self.loop()
+
+    def on_receive_current_pose(self, msg):
+        '''
+        Call Back Function when Current Positions is received
+        '''
+        # TODO: Implement
+        self.current_position = msg.pose # Get Message
+
+    def on_receive_waypoints(self, message):
+        '''
+        Call back function when final waypoints array is received
+        '''
+        self.waypoints = message.waypoints
 
     def on_receive_dbw_stat(self, dbw_enabled):
         '''
@@ -117,10 +139,11 @@ class DBWNode(object):
                 if self.PID_RESET:
                     self.controller.reset_PID()
                     self.PID_RESET = False
-                    # You should only publish the control commands if dbw is enabled
+                    cte = calc_steer_cte.get_cte(self.current_position, self.waypoints)
                     throttle, brake, steering = self.controller.control(twist_cmd = self.current_twist_cmd,
                                                                         current_velocity = self.current_velocity,
-                                                                        delta_time = delta_time)
+                                                                        delta_time = delta_time, cte)
+                    # You should only publish the control commands if dbw is enabled
                     self.publish(throttle, brake, steering)
                 else:
                     self.PID_RESET = True
