@@ -20,9 +20,10 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_control = PID(kp=0.5, ki=0.05, kd=0.1, mn=-0.35, mx=0.35)
+        self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.1, mn=decel_limit, mx=accel_limit)
+        self.pid_steer = PID(kp=0.5, ki=0.005, kd=0.25, mn=-max_steer_angle, mx=max_steer_angle)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(0.07, 0.02)
+        self.lowpass_steering = LowPassFilter(0.0, 1.0)
         #Low pass filter for throttle
         self.lowpass_throttle = LowPassFilter(0.2, 1)
         # Initialise constants
@@ -32,7 +33,7 @@ class Controller(object):
         self.wheel_radius = wheel_radius
         self.DEBUG_STAT = True
 
-    def control(self, twist_cmd, current_velocity, delta_time):
+    def control(self, twist_cmd, current_velocity, delta_time, cte):
         '''
         Run controller based on current values to determine optimal steering,
         brake and throttle.
@@ -42,14 +43,18 @@ class Controller(object):
         angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
+        '''
         steering_angle = self.yaw_control.get_steering(linear_velocity,
                                                        angular_velocity,
                                                        current_velocity.twist.linear.x)
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
+        '''
 
-        # Using PID get throttle value
+        # Using PID get throttle and steering value
+        steering_angle = self.pid_steer.step(cte, delta_time)
+
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
-        pid_acceleration = self.pid_control.step(linear_velocity_error, delta_time)
+        pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
         a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
 
         # caluculate brake force needed if acceleration is not positive
@@ -69,11 +74,10 @@ class Controller(object):
             brake_torque = (self.vehicle_mass + self.fuel_capacity * GAS_DENSITY) * deccel_request * self.wheel_radius
 
         if self.DEBUG_STAT:
-            rospy.loginfo("Steering_Unfilt : %f, Steering_Filt : %f, Accel_Unfilt : %f, Accel_Filt : %f, Brake : %f" % (steering_angle,
-                                                                                                                        steering_angle_filtered,
-                                                                                                                        pid_acceleration,
-                                                                                                                        a_ego_filtered,
-                                                                                                                        brake_torque))
+            rospy.loginfo("Steering_Filt : %f, Accel_Unfilt : %f, Accel_Filt : %f, Brake : %f" % (steering_angle,
+                                                                                                  pid_acceleration,
+                                                                                                  a_ego_filtered,
+                                                                                                  brake_torque))
 
         # Return throttle, brake, steer
         return throttle, brake_torque, steering_angle
@@ -82,4 +86,5 @@ class Controller(object):
         '''
         Resets the PID Controller
         '''
-        self.pid_control.reset()
+        self.pid_accel.reset()
+        self.pid_steer.reset()
