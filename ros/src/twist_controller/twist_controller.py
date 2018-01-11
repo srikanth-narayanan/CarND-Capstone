@@ -21,7 +21,6 @@ class Controller(object):
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
         self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.1, mn=decel_limit, mx=accel_limit)
-        #self.pid_steer = PID(kp=0.5, ki=0.005, kd=0.25, mn=-max_steer_angle, mx=max_steer_angle)
         # Lowpass filter for Steering
         self.lowpass_steering = LowPassFilter(0.5, 1.0)
         #Low pass filter for throttle
@@ -33,23 +32,20 @@ class Controller(object):
         self.wheel_radius = wheel_radius
         self.DEBUG_STAT = True
 
-    def control(self, cte, twist_cmd, current_velocity, delta_time):
+    def control(self, twist_cmd, current_velocity, delta_time):
         '''
         Run controller based on current values to determine optimal steering,
         brake and throttle.
         '''
         # TODO: Change the arg, kwarg list to suit your needs
-        linear_velocity = abs(twist_cmd.twist.linear.x)
+        linear_velocity = twist_cmd.twist.linear.x
         angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
-        steering_angle = self.yaw_control.get_steering(twist_cmd.twist.linear.x,
-                                                       twist_cmd.twist.angular.z,
+        steering_angle = self.yaw_control.get_steering(linear_velocity,
+                                                       angular_velocity,
                                                        current_velocity.twist.linear.x)
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
-
-        # Using PID get throttle and steering value
-        # steering_angle = self.pid_steer.step(cte, delta_time)
 
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
