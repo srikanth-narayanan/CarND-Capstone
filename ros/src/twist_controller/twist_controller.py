@@ -21,11 +21,11 @@ class Controller(object):
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
         self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.1, mn=decel_limit, mx=accel_limit)
-        self.pid_steer = PID(kp=0.5, ki=0.005, kd=0.25, mn=-max_steer_angle, mx=max_steer_angle)
+        #self.pid_steer = PID(kp=0.5, ki=0.005, kd=0.25, mn=-max_steer_angle, mx=max_steer_angle)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(0.0, 1.0)
+        self.lowpass_steering = LowPassFilter(0.5, 1.0)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(0.2, 1)
+        self.lowpass_throttle = LowPassFilter(0.5, 1.0)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
@@ -43,15 +43,13 @@ class Controller(object):
         angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
-        '''
-        steering_angle = self.yaw_control.get_steering(linear_velocity,
-                                                       angular_velocity,
+        steering_angle = self.yaw_control.get_steering(twist_cmd.twist.linear.x,
+                                                       twist_cmd.twist.angular.z,
                                                        current_velocity.twist.linear.x)
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
-        '''
 
         # Using PID get throttle and steering value
-        steering_angle = self.pid_steer.step(cte, delta_time)
+        # steering_angle = self.pid_steer.step(cte, delta_time)
 
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
@@ -80,7 +78,7 @@ class Controller(object):
                                                                                                   brake_torque))
 
         # Return throttle, brake, steer
-        return throttle, brake_torque, steering_angle
+        return throttle, brake_torque, steering_angle_filtered
 
     def reset_PID(self):
         '''

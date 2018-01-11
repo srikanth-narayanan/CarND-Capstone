@@ -138,16 +138,12 @@ class DBWNode(object):
             # Predict values if DBW is enabled
             if self.DBW_ENABLED and self.current_velocity is not None and self.current_twist_cmd is not None:
                 if self.PID_RESET:
-                    if len(self.waypoints) >= 10:
-                        self.controller.reset_PID()
-                        self.PID_RESET = False
-                        cte = calc_steer_cte.get_cte(self.current_position, self.waypoints)
-                        throttle, brake, steering = self.controller.control( cte, twist_cmd = self.current_twist_cmd,
-                                                                            current_velocity = self.current_velocity,
-                                                                            delta_time = delta_time)
-                    else:
-                        rospy.logwarn("Number of waypoint received: %s", len(self.waypoints))
-                        throttle, brake, steering = 0, 2000, 0
+                    self.controller.reset_PID()
+                    self.PID_RESET = False
+                    cte = calc_steer_cte.get_cte(self.current_position, self.waypoints)
+                    throttle, brake, steering = self.controller.control( cte, twist_cmd = self.current_twist_cmd,
+                                                                        current_velocity = self.current_velocity,
+                                                                        delta_time = delta_time)
                     # You should only publish the control commands if dbw is enabled
                     self.publish(throttle, brake, steering)
                 else:
