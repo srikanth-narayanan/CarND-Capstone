@@ -21,7 +21,7 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 50 # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 
 
 class WaypointUpdater(object):
@@ -117,7 +117,7 @@ class WaypointUpdater(object):
         delta_angle = abs(yaw - map_heading)
         if delta_angle > (math.pi / 4):
             closet_waypoint_idx += 1 # move it to the next point
-        
+
         return closet_waypoint_idx
 
     def publish_waypoints(self):
