@@ -38,7 +38,7 @@ def transform_waypoints(current_position, waypoints, num_points=None):
     return x_values, y_values
 
 
-def get_cte(current_pose, waypoints):
+def get_cte(current_position, waypoints):
     '''
     Return the CTE from the current position to the desired waypoint collection
     '''
