@@ -20,7 +20,7 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.1, mn=decel_limit, mx=accel_limit)
+        self.pid_accel = PID(kp=0.5, ki=0.05, kd=0.5, mn=decel_limit, mx=accel_limit)
         # Lowpass filter for Steering
         self.lowpass_steering = LowPassFilter(3, 1.0)
         #Low pass filter for throttle
@@ -38,7 +38,7 @@ class Controller(object):
         brake and throttle.
         '''
         # TODO: Change the arg, kwarg list to suit your needs
-        linear_velocity = twist_cmd.twist.linear.x
+        linear_velocity = abs(twist_cmd.twist.linear.x)
         angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
