@@ -55,7 +55,7 @@ class Controller(object):
         # Using PID for Throttle control
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
-        a#_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
+        #a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
         a_ego_filtered = pid_acceleration
 
         # calculate brake force needed if acceleration is not positive
