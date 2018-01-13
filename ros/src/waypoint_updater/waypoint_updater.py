@@ -41,18 +41,10 @@ class WaypointUpdater(object):
         # Initialise basic variables
         self.current_position = None
         self.waypoints = None
-        self.rate = 5
-        self.state = "INIT"
-        self.loop()
-
-    def loop(self):
-      '''
-      loop and update messages
-      '''
-      rate = rospy.Rate(self.rate)
-      while not rospy.is_shutdown():
-          if self.waypoints and self.state != "INIT":
-              self.publish_waypoints()
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.publish_waypoints()
+            rospy.sleep()
 
     def pose_cb(self, msg):
         '''
@@ -135,6 +127,7 @@ class WaypointUpdater(object):
         a main method where every thing is dealt. here after all calcs waypoints
         are pushed to publish
         '''
+
         if self.current_position is not None:
             closet_waypoint_idx = self.get_closet_waypoint()
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
