@@ -20,11 +20,11 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_accel = PID(kp=3, ki=0.5, kd=0.5, mn=decel_limit, mx=accel_limit)
+        self.pid_accel = PID(kp=1.0, ki=0.0, kd=0.01, mn=decel_limit, mx=accel_limit)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(3.0, 1.0)
+        self.lowpass_steering = LowPassFilter(0.07, 0.02)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(3.0, 1.0)
+        self.lowpass_throttle = LowPassFilter(0.07, 0.02)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
