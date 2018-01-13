@@ -51,7 +51,7 @@ class WaypointUpdater(object):
       '''
       rate = rospy.Rate(self.rate)
       while not rospy.is_shutdown():
-          if len(self.waypoints) > 0 and self.state ! = "INIT":
+          if len(self.waypoints) > 0 and self.state != "INIT":
               self.publish_waypoints()
 
     def pose_cb(self, msg):
