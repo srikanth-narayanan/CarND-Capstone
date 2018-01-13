@@ -50,12 +50,11 @@ class Controller(object):
         else:
             steering_angle = 0.0
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
-
+        
         # Using PID for Throttle control
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
-        #a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
-        a_ego_filtered = pid_acceleration
+        a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
 
         # calculate brake force needed if acceleration is not positive
         if a_ego_filtered > 0.0:
