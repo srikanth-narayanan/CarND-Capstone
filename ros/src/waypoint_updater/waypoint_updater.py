@@ -69,9 +69,8 @@ class WaypointUpdater(object):
         only once as the entire waypoints are sent
         '''
         # TODO: Implement
-        self.waypoints = waypoints.waypoints
-        #if self.waypoints is None:
-            #self.waypoints = waypoints.waypoints
+        if self.waypoints is None:
+            self.waypoints = waypoints.waypoints
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
