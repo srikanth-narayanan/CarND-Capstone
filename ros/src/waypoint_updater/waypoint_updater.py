@@ -41,8 +41,18 @@ class WaypointUpdater(object):
         # Initialise basic variables
         self.current_position = None
         self.waypoints = None
+        self.rate = 5
+        self.state = "INIT"
+        self.loop()
 
-        rospy.spin()
+    def loop(self):
+      '''
+      loop and update messages
+      '''
+      rate = rospy.Rate(self.rate)
+      while not rospy.is_shutdown():
+          if len(self.waypoints) > 0 and self.state ! = "INIT":
+              self.publish_waypoints()
 
     def pose_cb(self, msg):
         '''
@@ -50,8 +60,8 @@ class WaypointUpdater(object):
         '''
         # TODO: Implement
         self.current_position = msg.pose # Get Message
-        if self.waypoints is not None:
-            self.publish_waypoints() # Push New Calculated Waypoints ahead of the vehicle
+        #if self.waypoints is not None:
+            #self.publish_waypoints() # Push New Calculated Waypoints ahead of the vehicle
 
     def waypoints_cb(self, waypoints):
         '''
@@ -59,8 +69,9 @@ class WaypointUpdater(object):
         only once as the entire waypoints are sent
         '''
         # TODO: Implement
-        if self.waypoints is None:
-            self.waypoints = waypoints.waypoints
+        self.waypoints = waypoints.waypoints
+        #if self.waypoints is None:
+            #self.waypoints = waypoints.waypoints
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
