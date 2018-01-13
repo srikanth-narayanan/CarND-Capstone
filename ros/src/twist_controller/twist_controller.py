@@ -42,10 +42,13 @@ class Controller(object):
         angular_velocity = twist_cmd.twist.angular.z
 
         # Using Yaw Controller get steering values
-        steering_angle = self.yaw_control.get_steering(linear_velocity,
-                                                       angular_velocity,
-                                                       current_velocity.twist.linear.x)
-        steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
+        if current_velocity.twist.linear.x > 0.05:
+            steering_angle = self.yaw_control.get_steering(linear_velocity,
+                                                           angular_velocity,
+                                                           current_velocity.twist.linear.x)
+            steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
+        else:
+            steering_angle_filtered = 0.0
 
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
