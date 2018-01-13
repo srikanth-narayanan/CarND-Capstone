@@ -44,7 +44,7 @@ class WaypointUpdater(object):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_waypoints()
-            rospy.sleep()
+            rate.sleep()
 
     def pose_cb(self, msg):
         '''
