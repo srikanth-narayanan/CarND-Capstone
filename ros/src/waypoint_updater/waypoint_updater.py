@@ -3,6 +3,7 @@
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from std_msgs.msg import Int32
 import math
 import tf
 
@@ -22,7 +23,7 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-TARGET_V_EGO = 12 # MPH
+TARGET_V_EGO = 45 # MPH
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -30,6 +31,7 @@ class WaypointUpdater(object):
 
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
 
@@ -41,6 +43,7 @@ class WaypointUpdater(object):
         # Initialise basic variables
         self.current_position = None
         self.waypoints = None
+        self.red_traffic_light = None
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_waypoints()
@@ -66,7 +69,7 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
-        pass
+        self.red_traffic_light = msg.data
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
@@ -128,14 +131,32 @@ class WaypointUpdater(object):
         are pushed to publish
         '''
 
+        rospy.loginfo("red_traffic_light: " + str(self.red_traffic_light))
         if self.current_position is not None:
+            if self.red_traffic_light and self.waypoints:
+                traffic_light_pose = self.waypoints[self.red_traffic_light].pose.pose
+                dist_to_traffic_light = self._calc_dist(self.current_position.position, traffic_light_pose.position)
+            else:
+                dist_to_traffic_light = 999999
+
             closet_waypoint_idx = self.get_closet_waypoint()
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
 
             # Set speed for waypoints
+            max_change = 2 * 1.60934 / 3.6
+            min_speed = 10 * 1.60934 / 3.6
             for i in range(len(forward_waypoints) - 1):
-                target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6
-                forward_waypoints[i].twist.twist.linear.x = target_v_ego_mps
+                if dist_to_traffic_light > 75:
+                    target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6
+                    forward_waypoints[i].twist.twist.linear.x = \
+                        min(forward_waypoints[i].twist.twist.linear.x + max_change, target_v_ego_mps)
+                elif (dist_to_traffic_light > 30):
+                    forward_waypoints[i].twist.twist.linear.x = \
+                        max(forward_waypoints[i].twist.twist.linear.x - max_change, min_speed)
+                else:
+                    forward_waypoints[i].twist.twist.linear.x = 0
+            rospy.loginfo("dist_to_traffic_light: " + str(dist_to_traffic_light) +
+                          "; speed = " + forward_waypoints[0].twist.twist.linear.x / 1.60934 * 3.6)
 
             # Create a data type to publish forward lane points
             # creating a same way to publish waypoint as done in Waypoint Loader file
