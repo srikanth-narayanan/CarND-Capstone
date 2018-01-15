@@ -156,7 +156,7 @@ class WaypointUpdater(object):
                 else:
                     forward_waypoints[i].twist.twist.linear.x = 0
             rospy.loginfo("dist_to_traffic_light: " + str(dist_to_traffic_light) +
-                          "; speed = " + forward_waypoints[0].twist.twist.linear.x / 1.60934 * 3.6)
+                          "; speed = " + str(forward_waypoints[0].twist.twist.linear.x / 1.60934 * 3.6))
 
             # Create a data type to publish forward lane points
             # creating a same way to publish waypoint as done in Waypoint Loader file
