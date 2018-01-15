@@ -92,6 +92,7 @@ class TLDetector(object):
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
 
+    # TODO (SDG) - identical to function in wp_updater, move to a helpers file
     def _calc_dist(self, pos1, pos2):
         '''
         A helper method to return distance between two waypoints
@@ -99,6 +100,7 @@ class TLDetector(object):
         dist = math.sqrt((pos1.x - pos2.x)**2 + (pos1.y - pos2.y)**2)
         return dist
 
+    # TODO (SDG) - identical to function in wp_updater, move to a helpers file
     def get_closest_waypoint(self, pose):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
@@ -135,8 +137,11 @@ class TLDetector(object):
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         #Get classification
+        # TODO - uncomment next line when classification is implemented
         #return self.light_classifier.get_classification(cv_image)
 
+        # TODO - remove this line when classification is implemented
+        # light.state is only provided for debugging purposes and is not available in the real car
         return light.state
 
     def process_traffic_lights(self):

@@ -24,6 +24,8 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 TARGET_V_EGO = 45 # MPH
+MIN_TARGET_V = 10 # minimum speed for car to approach a red light (MPH)
+CHANGE_V = 2 # Rate of change in speed when accelerating and deceleration (change in MPH per time unit)
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -44,6 +46,7 @@ class WaypointUpdater(object):
         self.current_position = None
         self.waypoints = None
         self.red_traffic_light = None
+        self.last_speed = 0
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_waypoints()
@@ -130,10 +133,9 @@ class WaypointUpdater(object):
         a main method where every thing is dealt. here after all calcs waypoints
         are pushed to publish
         '''
-
-        rospy.loginfo("red_traffic_light: " + str(self.red_traffic_light))
-        if self.current_position is not None:
-            if self.red_traffic_light and self.waypoints:
+        # If we don't the position and traffic_waypoint channels are not yet broadcasting, the car should not move
+        if self.current_position is not None and self.red_traffic_light is not None:
+            if self.red_traffic_light and self.red_traffic_light > 0 and self.waypoints:
                 traffic_light_pose = self.waypoints[self.red_traffic_light].pose.pose
                 dist_to_traffic_light = self._calc_dist(self.current_position.position, traffic_light_pose.position)
             else:
@@ -143,20 +145,27 @@ class WaypointUpdater(object):
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
 
             # Set speed for waypoints
-            max_change = 2 * 1.60934 / 3.6
-            min_speed = 10 * 1.60934 / 3.6
+            max_change_mps = CHANGE_V * 1.60934 / 3.6  # m/s
+            min_speed_mps = MIN_TARGET_V * 1.60934 / 3.6  # m/s
+            target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6  # m/s
+
+            # Note that the way speed is increased or decreased here is too simplistic since it does not take into
+            # account the actual time duration since last update, and the acceleration/deceleration is therefore
+            # dependent on the rospy.Rate
+            # SDG TODO: ensure change in speed is constant and works with different ropsy.Rate values
             for i in range(len(forward_waypoints) - 1):
                 if dist_to_traffic_light > 75:
-                    target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6
-                    forward_waypoints[i].twist.twist.linear.x = \
-                        min(forward_waypoints[i].twist.twist.linear.x + max_change, target_v_ego_mps)
+                    # If the car is very far from the traffic light, there is no need to start slowing down
+                    # but car may have to accelerate, so increase speed since last speed until target speed is reached
+                    forward_waypoints[i].twist.twist.linear.x = min(self.last_speed + max_change_mps, target_v_ego_mps)
                 elif (dist_to_traffic_light > 30):
-                    forward_waypoints[i].twist.twist.linear.x = \
-                        max(forward_waypoints[i].twist.twist.linear.x - max_change, min_speed)
+                    # If the car is within 75m of a traffic light, it should start slowing down
+                    forward_waypoints[i].twist.twist.linear.x = max(self.last_speed - max_change_mps, min_speed_mps)
                 else:
+                    # car should stop 30 m before traffic light
                     forward_waypoints[i].twist.twist.linear.x = 0
-            rospy.loginfo("dist_to_traffic_light: " + str(dist_to_traffic_light) +
-                          "; speed = " + str(forward_waypoints[0].twist.twist.linear.x / 1.60934 * 3.6))
+
+            self.last_speed = forward_waypoints[0].twist.twist.linear.x
 
             # Create a data type to publish forward lane points
             # creating a same way to publish waypoint as done in Waypoint Loader file
