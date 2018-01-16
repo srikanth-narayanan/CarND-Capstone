@@ -136,9 +136,12 @@ class TLDetector(object):
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
+
         #Get classification
         # TODO - uncomment next line when classification is implemented
-        #return self.light_classifier.get_classification(cv_image)
+        traffic_light_stat = self.light_classifier.get_classification(cv_image)
+
+        # Can you test using the new classified traffic_light_stat
 
         # TODO - remove this line when classification is implemented
         # light.state is only provided for debugging purposes and is not available in the real car
