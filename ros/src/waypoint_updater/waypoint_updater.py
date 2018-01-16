@@ -24,8 +24,10 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 TARGET_V_EGO = 45 # MPH
-MIN_TARGET_V = 10 # minimum speed for car to approach a red light (MPH)
-CHANGE_V = 2 # Rate of change in speed when accelerating and deceleration (change in MPH per time unit)
+MIN_TARGET_V_MPH = 10 # minimum speed for car to approach a red light while coasting (MPH)
+ACCELERATION_MPHS = 3 # Rate of change in speed when accelerating (MPH per second)
+DECELERATION_MPHS = 7 # Rate of change in speed when decelerating (MPH per second)
+STOP_DIST_TRAFFIC_LIGHT = 30 # distance in front of traffic light car should stop
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -47,6 +49,7 @@ class WaypointUpdater(object):
         self.waypoints = None
         self.red_traffic_light = None
         self.last_speed = 0
+        self.last_timestamp = None
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_waypoints()
@@ -145,24 +148,31 @@ class WaypointUpdater(object):
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
 
             # Set speed for waypoints
-            max_change_mps = CHANGE_V * 1.60934 / 3.6  # m/s
-            min_speed_mps = MIN_TARGET_V * 1.60934 / 3.6  # m/s
+            acceleration_mps2 = ACCELERATION_MPHS * 1.60934 / 3.6  # m/s^2
+            deceleration_mps2 = DECELERATION_MPHS * 1.60934 / 3.6  # m/s^2
+            min_speed_mps = MIN_TARGET_V_MPH * 1.60934 / 3.6  # m/s
             target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6  # m/s
+            elapsed_time_s = (rospy.get_time() - self.last_timestamp) if self.last_timestamp else 1
+            change_in_v_during_acc = acceleration_mps2 * elapsed_time_s
+            change_in_v_during_dec = deceleration_mps2 * elapsed_time_s
+            breaking_dist_m = self.last_speed * self.last_speed / deceleration_mps2
 
             # Note that the way speed is increased or decreased here is too simplistic since it does not take into
             # account the actual time duration since last update, and the acceleration/deceleration is therefore
             # dependent on the rospy.Rate
             # SDG TODO: ensure change in speed is constant and works with different ropsy.Rate values
             for i in range(len(forward_waypoints) - 1):
-                if dist_to_traffic_light > 75:
+                if dist_to_traffic_light > (STOP_DIST_TRAFFIC_LIGHT + breaking_dist_m):
                     # If the car is very far from the traffic light, there is no need to start slowing down
                     # but car may have to accelerate, so increase speed since last speed until target speed is reached
-                    forward_waypoints[i].twist.twist.linear.x = min(self.last_speed + max_change_mps, target_v_ego_mps)
-                elif (dist_to_traffic_light > 30):
+                    forward_waypoints[i].twist.twist.linear.x = min(self.last_speed + change_in_v_during_acc,
+                                                                    target_v_ego_mps)
+                elif (dist_to_traffic_light > STOP_DIST_TRAFFIC_LIGHT):
                     # If the car is within 75m of a traffic light, it should start slowing down
-                    forward_waypoints[i].twist.twist.linear.x = max(self.last_speed - max_change_mps, min_speed_mps)
+                    forward_waypoints[i].twist.twist.linear.x = max(self.last_speed - change_in_v_during_dec,
+                                                                    min_speed_mps)
                 else:
-                    # car should stop 30 m before traffic light
+                    # car should stop 30 m (i.e., STOP_DIST_TRAFFIC_LIGHT) before traffic light
                     forward_waypoints[i].twist.twist.linear.x = 0
 
             self.last_speed = forward_waypoints[0].twist.twist.linear.x
@@ -172,6 +182,7 @@ class WaypointUpdater(object):
             drive_path = Lane()
             drive_path.header.frame_id = '/world' # set the header name for waypoints
             drive_path.header.stamp = rospy.Time(0) # Time Stamp for the published message
+            self.last_timestamp = rospy.get_time()
             drive_path.waypoints = forward_waypoints
             # Publish waypoints
             self.final_waypoints_pub.publish(drive_path)
