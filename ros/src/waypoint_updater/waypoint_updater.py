@@ -24,6 +24,10 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 TARGET_V_EGO = 45 # MPH
+MIN_TARGET_V_MPH = 10 # minimum speed for car to approach a red light while coasting (MPH)
+ACCELERATION_MPHS = 3 # Rate of change in speed when accelerating (MPH per second)
+DECELERATION_MPHS = 7 # Rate of change in speed when decelerating (MPH per second)
+STOP_DIST_TRAFFIC_LIGHT = 30 # distance in front of traffic light car should stop
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -44,6 +48,8 @@ class WaypointUpdater(object):
         self.current_position = None
         self.waypoints = None
         self.red_traffic_light = None
+        self.last_speed = 0
+        self.last_timestamp = None
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.publish_waypoints()
@@ -130,10 +136,9 @@ class WaypointUpdater(object):
         a main method where every thing is dealt. here after all calcs waypoints
         are pushed to publish
         '''
-
-        rospy.loginfo("red_traffic_light: " + str(self.red_traffic_light))
-        if self.current_position is not None:
-            if self.red_traffic_light and self.waypoints:
+        # If we don't the position and traffic_waypoint channels are not yet broadcasting, the car should not move
+        if self.current_position is not None and self.red_traffic_light is not None:
+            if self.red_traffic_light and self.red_traffic_light > 0 and self.waypoints:
                 traffic_light_pose = self.waypoints[self.red_traffic_light].pose.pose
                 dist_to_traffic_light = self._calc_dist(self.current_position.position, traffic_light_pose.position)
             else:
@@ -143,26 +148,41 @@ class WaypointUpdater(object):
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
 
             # Set speed for waypoints
-            max_change = 2 * 1.60934 / 3.6
-            min_speed = 10 * 1.60934 / 3.6
+            acceleration_mps2 = ACCELERATION_MPHS * 1.60934 / 3.6  # m/s^2
+            deceleration_mps2 = DECELERATION_MPHS * 1.60934 / 3.6  # m/s^2
+            min_speed_mps = MIN_TARGET_V_MPH * 1.60934 / 3.6  # m/s
+            target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6  # m/s
+            elapsed_time_s = (rospy.get_time() - self.last_timestamp) if self.last_timestamp else 1
+            change_in_v_during_acc = acceleration_mps2 * elapsed_time_s
+            change_in_v_during_dec = deceleration_mps2 * elapsed_time_s
+            breaking_dist_m = self.last_speed * self.last_speed / deceleration_mps2
+
+            # Note that the way speed is increased or decreased here is too simplistic since it does not take into
+            # account the actual time duration since last update, and the acceleration/deceleration is therefore
+            # dependent on the rospy.Rate
+            # SDG TODO: ensure change in speed is constant and works with different ropsy.Rate values
             for i in range(len(forward_waypoints) - 1):
-                if dist_to_traffic_light > 75:
-                    target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6
-                    forward_waypoints[i].twist.twist.linear.x = \
-                        min(forward_waypoints[i].twist.twist.linear.x + max_change, target_v_ego_mps)
-                elif (dist_to_traffic_light > 30):
-                    forward_waypoints[i].twist.twist.linear.x = \
-                        max(forward_waypoints[i].twist.twist.linear.x - max_change, min_speed)
+                if dist_to_traffic_light > (STOP_DIST_TRAFFIC_LIGHT + breaking_dist_m):
+                    # If the car is very far from the traffic light, there is no need to start slowing down
+                    # but car may have to accelerate, so increase speed since last speed until target speed is reached
+                    forward_waypoints[i].twist.twist.linear.x = min(self.last_speed + change_in_v_during_acc,
+                                                                    target_v_ego_mps)
+                elif (dist_to_traffic_light > STOP_DIST_TRAFFIC_LIGHT):
+                    # If the car is within 75m of a traffic light, it should start slowing down
+                    forward_waypoints[i].twist.twist.linear.x = max(self.last_speed - change_in_v_during_dec,
+                                                                    min_speed_mps)
                 else:
+                    # car should stop 30 m (i.e., STOP_DIST_TRAFFIC_LIGHT) before traffic light
                     forward_waypoints[i].twist.twist.linear.x = 0
-            rospy.loginfo("dist_to_traffic_light: " + str(dist_to_traffic_light) +
-                          "; speed = " + str(forward_waypoints[0].twist.twist.linear.x / 1.60934 * 3.6))
+
+            self.last_speed = forward_waypoints[0].twist.twist.linear.x
 
             # Create a data type to publish forward lane points
             # creating a same way to publish waypoint as done in Waypoint Loader file
             drive_path = Lane()
             drive_path.header.frame_id = '/world' # set the header name for waypoints
             drive_path.header.stamp = rospy.Time(0) # Time Stamp for the published message
+            self.last_timestamp = rospy.get_time()
             drive_path.waypoints = forward_waypoints
             # Publish waypoints
             self.final_waypoints_pub.publish(drive_path)
