@@ -53,7 +53,7 @@ class TLDetector(object):
         #rospy.spin()
         self.ros_spin()
 
-    def self.ros_spin(self):
+    def ros_spin(self):
         rate = rospy.Rate(10) # 10 Hz spin rate
         while not rospy.is_shutdown():
             '''
