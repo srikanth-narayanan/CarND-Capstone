@@ -141,11 +141,12 @@ class TLDetector(object):
         # TODO - uncomment next line when classification is implemented
         traffic_light_stat = self.light_classifier.get_classification(cv_image)
 
-        # Can you test using the new classified traffic_light_stat
+        return traffic_light_stat
 
         # TODO - remove this line when classification is implemented
         # light.state is only provided for debugging purposes and is not available in the real car
-        return light.state
+
+        #return light.state
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
