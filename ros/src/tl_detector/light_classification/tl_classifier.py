@@ -5,10 +5,10 @@ import numpy as np
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
-        self.RED_LOWER_LIMIT = np.array(0,50,50) # in HSV
-        self.RED_UPPER_LIMIT = np.array(10,255,255) # in HSV
-        self.GREEN_LOWER_LIMIT = np.array(170,50,50) # in HSV
-        self.BLUE_UPPER_LIMIT = np.array(180,255,255) # in HSV
+        self.RED_LOWER_LIMIT = np.array([0,50,50]) # in HSV
+        self.RED_UPPER_LIMIT = np.array([10,255,255]) # in HSV
+        self.GREEN_LOWER_LIMIT = np.array([170,50,50]) # in HSV
+        self.BLUE_UPPER_LIMIT = np.array([180,255,255]) # in HSV
         self.circle_stat = False
 
     def get_classification(self, image):
