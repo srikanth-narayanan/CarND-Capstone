@@ -39,7 +39,7 @@ class TLClassifier(object):
         blured_image = cv2.GaussianBlur(weighted_image, (15,15), 0.0)
 
         # Detect red circles using Hough Circle
-        image_circles = cv2.HoughCircles(blur_img,cv2.HOUGH_GRADIENT,0.5,41,
+        image_circles = cv2.HoughCircles(blured_image,cv2.HOUGH_GRADIENT,0.5,41,
                                          param1=70,param2=30,minRadius=5,
                                          maxRadius=150)
         if image_circles is not None:
