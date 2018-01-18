@@ -27,7 +27,7 @@ TARGET_V_EGO = 45 # MPH
 MIN_TARGET_V_MPH = 10 # minimum speed for car to approach a red light while coasting (MPH)
 ACCELERATION_MPHS = 3 # Rate of change in speed when accelerating (MPH per second)
 DECELERATION_MPHS = 7 # Rate of change in speed when decelerating (MPH per second)
-STOP_DIST_TRAFFIC_LIGHT = 30 # distance in front of traffic light car should stop
+STOP_DIST_TRAFFIC_LIGHT = 6 # distance in front of stop line center of car should stop
 
 class WaypointUpdater(object):
     def __init__(self):

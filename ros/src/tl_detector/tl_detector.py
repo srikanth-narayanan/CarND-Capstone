@@ -14,6 +14,10 @@ import math
 
 STATE_COUNT_THRESHOLD = 3
 
+# light.state is only provided for debugging purposes and is not available in the real car
+# Set flag to False if you want to use light.state to debug, True if you want to use the real image classification
+USE_CLASSIFICATION = False
+
 class TLDetector(object):
     def __init__(self):
         rospy.init_node('tl_detector')
@@ -39,6 +43,8 @@ class TLDetector(object):
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
+        self.traffic_wps = None
+        self.waypoints = None
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
@@ -78,11 +84,27 @@ class TLDetector(object):
                 self.state_count += 1
             rate.sleep()
 
+    def update_traffic_light_waypoints(self):
+        """Calculates the waypoint indices that are the closest to each traffic light position in the
+        config file. """
+        coordinates = self.config['stop_line_positions']
+        self.tl_poses = []
+        for coordinate in coordinates:
+            pose = Pose()
+            pose.position.x = coordinate[0]
+            pose.position.y = coordinate[1]
+            self.tl_poses.append(pose)
+        self.traffic_wps = [self.get_closest_waypoint(pose) for pose in self.tl_poses]
+
     def pose_cb(self, msg):
         self.pose = msg
 
     def waypoints_cb(self, waypoints):
-        self.waypoints = waypoints
+        """Callback function that updates the car's waypoints and calculate the waypoint indices that are closest to
+        each traffic light position. These data are static and logic has to be executed only once at the beginning."""
+        if self.waypoints is None:
+            self.waypoints = waypoints
+            self.update_traffic_light_waypoints()
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
@@ -127,11 +149,8 @@ class TLDetector(object):
                 closest_waypoint_idx = idx
         return closest_waypoint_idx
 
-    def get_light_state(self, light):
-        """Determines the current color of the traffic light
-
-        Args:
-            light (TrafficLight): light to classify
+    def get_light_state(self):
+        """Determines the current color of the traffic light using image classification
 
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
@@ -142,18 +161,8 @@ class TLDetector(object):
             return False
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
-
-
-        #Get classification
-        # TODO - uncomment next line when classification is implemented
-        traffic_light_stat = self.light_classifier.get_classification(cv_image)
-
-        return traffic_light_stat
-
-        # TODO - remove this line when classification is implemented
-        # light.state is only provided for debugging purposes and is not available in the real car
-
-        #return light.state
+        traffic_light_state = self.light_classifier.get_classification(cv_image)
+        return traffic_light_state
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -164,34 +173,34 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        light = None
 
-        # List of positions that correspond to the line to stop in front of for a given intersection
-        stop_line_positions = self.config['stop_line_positions']
         car_position = None
         if (self.pose):
             car_position = self.get_closest_waypoint(self.pose.pose)
 
-
-        #TODO find the closest visible traffic light (if one exists)
+        # Find the traffic light closest to the car ahead of the car (if one exists)
         light_wp = None
-        light = None
-        min_dist_indices = 9999  # minimum distance in indices
-        for index, traffic_light in enumerate(self.lights):
-            if car_position:
-                traffic_light_index = self.get_closest_waypoint(traffic_light.pose.pose)
-                indices_to_traffic_light = traffic_light_index - car_position
-                if indices_to_traffic_light > 0:  # traffic light is ahead of the car
-                    if indices_to_traffic_light < min_dist_indices:
-                        min_dist_indices = indices_to_traffic_light
-                        light_wp = traffic_light_index
-                        light = traffic_light
+        light_idx = None
+        min_diff_index = 9999  # minimum distance in indices
+        if car_position:
+            # we can simplify distance calculation by just comparing waypoint indices
+            for index, traffic_light_wp in enumerate(self.traffic_wps):
+                diff_index = traffic_light_wp - car_position
+                if diff_index > 0:  # traffic light must be ahead of the car
+                    if diff_index < min_diff_index:
+                        min_diff_index = diff_index
+                        light_wp = traffic_light_wp
+                        light_idx = index
 
-        if light:
-            state = self.get_light_state(light)
-            return light_wp, state
-        self.waypoints = None
-        return -1, TrafficLight.UNKNOWN
+        if light_wp is -1:
+            state = TrafficLight.UNKNOWN
+        else:
+            if USE_CLASSIFICATION:
+                state = self.get_light_state()
+            else:
+                state = self.lights[light_idx].state
+        return light_wp, state
+
 
 if __name__ == '__main__':
     try:
