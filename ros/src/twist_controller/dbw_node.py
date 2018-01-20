@@ -140,9 +140,10 @@ class DBWNode(object):
                 if self.PID_RESET:
                     self.controller.reset_PID()
                     self.PID_RESET = False
+                    cte = calc_steer_cte(self.current_position, self.waypoints)
                     throttle, brake, steering = self.controller.control(twist_cmd = self.current_twist_cmd,
                                                                         current_velocity = self.current_velocity,
-                                                                        delta_time = delta_time)
+                                                                        delta_time = delta_time, cte=cte)
                     # You should only publish the control commands if dbw is enabled
                     self.publish(throttle, brake, steering)
                 else:

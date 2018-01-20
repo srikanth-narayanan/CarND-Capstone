@@ -21,6 +21,7 @@ class Controller(object):
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
         self.pid_accel = PID(kp=1.0, ki=0.0, kd=0.01, mn=decel_limit, mx=accel_limit)
+        self.pid_steer = PID(kp=0.15, ki=0.001, kd=0.1, mn=-max_steer_angle, mx=max_steer_angle)
         # Lowpass filter for Steering
         self.lowpass_steering = LowPassFilter(0.00, 0.02)
         #Low pass filter for throttle
@@ -32,7 +33,7 @@ class Controller(object):
         self.wheel_radius = wheel_radius
         self.DEBUG_STAT = True
 
-    def control(self, twist_cmd, current_velocity, delta_time):
+    def control(self, twist_cmd, current_velocity, delta_time, cte):
         '''
         Run controller based on current values to determine optimal steering,
         brake and throttle.
@@ -50,7 +51,10 @@ class Controller(object):
         else:
             steering_angle = 0.0
         #steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
-        steering_angle_filtered = steering_angle
+
+        ### Corrective Steering
+        correct_steer = self.pid_steer.step(cte, delta_time)
+        steering_angle_filtered = 1.0 * steering_angle + 1.0 * correct_steer
 
         # Using PID for Throttle control
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
@@ -88,3 +92,4 @@ class Controller(object):
         Resets the PID Controller
         '''
         self.pid_accel.reset()
+        self.pid_steer.reset()
