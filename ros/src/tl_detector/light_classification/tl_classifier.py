@@ -7,8 +7,8 @@ class TLClassifier(object):
         #TODO load classifier
         self.RED_LOWER_LIMIT = np.array([0,50,50]) # in HSV
         self.RED_UPPER_LIMIT = np.array([10,255,255]) # in HSV
-        self.GREEN_LOWER_LIMIT = np.array([170,50,50]) # in HSV
-        self.BLUE_UPPER_LIMIT = np.array([180,255,255]) # in HSV
+        self.RED2_LOWER_LIMIT = np.array([160,50,50]) # in HSV
+        self.RED2_UPPER_LIMIT = np.array([179,255,255]) # in HSV
         self.circle_stat = False
 
     def get_classification(self, image):
@@ -31,7 +31,7 @@ class TLClassifier(object):
         red_image = cv2.inRange(image_hsv, self.RED_LOWER_LIMIT, self.RED_UPPER_LIMIT)
 
         # Apply all between blue and red
-        rest_image = cv2.inRange(image_hsv, self.GREEN_LOWER_LIMIT, self.BLUE_UPPER_LIMIT)
+        rest_image = cv2.inRange(image_hsv, self.RED2_LOWER_LIMIT, self.RED2_UPPER_LIMIT)
 
         # Weight the entire image
         weighted_image = cv2.addWeighted(red_image, 1.0, rest_image, 1.0, 0.0)
