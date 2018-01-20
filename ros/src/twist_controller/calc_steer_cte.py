@@ -24,7 +24,6 @@ def transform_waypoints(current_position, waypoints, num_points=None):
                                                                  current_position.orientation.w))
     if num_points is None:
         num_points = len(waypoints)
-
     for i in range(num_points):
         shift_x = waypoints[i].pose.pose.position.x - current_position.position.x
         shift_y = waypoints[i].pose.pose.position.y - current_position.position.y
@@ -42,8 +41,8 @@ def get_cte(current_position, waypoints):
     '''
     Return the CTE from the current position to the desired waypoint collection
     '''
-    x_values, y_values = transform_waypoints(current_position, waypoints, num_points=10)
-    poly_coeff = np.polyfit(x_values, y_values, 3)
+    x_values, y_values = transform_waypoints(current_position, waypoints, num_points=20)
+    poly_coeff = np.polynomial.polynomial.polyfit(x_values, y_values, 3)
     cte = poly_coeff[0] # kind of center
 
     return cte

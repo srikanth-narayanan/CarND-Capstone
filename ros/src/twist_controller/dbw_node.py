@@ -62,7 +62,7 @@ class DBWNode(object):
         self.current_velocity = None
         self.previous_time = rospy.get_time() # Get the time during instantiantion
         self.PID_RESET = True
-        self.waypoints = None
+        self.final_waypoints = None
         self.current_position = None
 
 
@@ -101,8 +101,7 @@ class DBWNode(object):
         '''
         Call back function when final waypoints array is received
         '''
-        if self.waypoints is None:
-            self.waypoints = message.waypoints
+        self.final_waypoints = message.waypoints
 
     def on_receive_dbw_stat(self, dbw_enabled):
         '''
@@ -137,7 +136,7 @@ class DBWNode(object):
             self.previous_time = current_time
 
             # Predict values if DBW is enabled
-            if self.DBW_ENABLED and self.current_velocity is not None and self.current_twist_cmd is not None:
+            if self.DBW_ENABLED and self.current_velocity is not None and self.current_twist_cmd is not None and self.final_waypoints is not None:
                 if self.PID_RESET:
                     self.controller.reset_PID()
                     self.PID_RESET = False
