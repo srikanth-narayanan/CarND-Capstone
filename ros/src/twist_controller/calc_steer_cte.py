@@ -18,16 +18,16 @@ def transform_waypoints(current_position, waypoints, num_points=None):
     x_values = []
     y_values = []
 
-    roll, pitch, yaw = tf.transformations.euler_from_quaternion((current_position.pose.orientation.x,
-                                                                 current_position.pose.orientation.y,
-                                                                 current_position.pose.orientation.z,
-                                                                 current_position.pose.orientation.w))
+    roll, pitch, yaw = tf.transformations.euler_from_quaternion((current_position.orientation.x,
+                                                                 current_position.orientation.y,
+                                                                 current_position.orientation.z,
+                                                                 current_position.orientation.w))
     if num_points is None:
         num_points = len(waypoints)
 
     for i in range(num_points):
-        shift_x = waypoints[i].pose.pose.position.x - current_position.pose.position.x
-        shift_y = waypoints[i].pose.pose.position.y - current_position.pose.position.y
+        shift_x = waypoints[i].pose.pose.position.x - current_position.position.x
+        shift_y = waypoints[i].pose.pose.position.y - current_position.position.y
 
         x = shift_x * cos(yaw) - shift_y * sin(yaw)
         y = shift_x * sin(yaw) + shift_y * cos(yaw)
