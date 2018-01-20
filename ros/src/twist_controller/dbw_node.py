@@ -101,7 +101,8 @@ class DBWNode(object):
         '''
         Call back function when final waypoints array is received
         '''
-        self.waypoints = message.waypoints
+        if self.waypoints is None:
+            self.waypoints = message.waypoints
 
     def on_receive_dbw_stat(self, dbw_enabled):
         '''
