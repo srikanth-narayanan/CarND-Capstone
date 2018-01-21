@@ -23,11 +23,19 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-TARGET_V_EGO = 45 # MPH
-MIN_TARGET_V_MPH = 10 # minimum speed for car to approach a red light while coasting (MPH)
+MIN_TARGET_V_MPH = 5 # minimum speed for car to approach a red light while coasting (MPH)
 ACCELERATION_MPHS = 3 # Rate of change in speed when accelerating (MPH per second)
 DECELERATION_MPHS = 7 # Rate of change in speed when decelerating (MPH per second)
 STOP_DIST_TRAFFIC_LIGHT = 6 # distance in front of stop line center of car should stop
+
+
+def kmph2mps(velocity_kmph):
+    "Km per hour to meters per second"
+    return (velocity_kmph * 1000.) / (60. * 60.)
+
+def mph2mps(velocity_mph):
+    "Miles per hour to meters per second"
+    return velocity_mph * 1.60934 / 3.6
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -41,6 +49,8 @@ class WaypointUpdater(object):
 
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
+
+        self.target_velocity_mps = kmph2mps(rospy.get_param('/waypoint_loader/velocity'))
 
         # TODO: Add other member variables you need below
 
@@ -148,10 +158,9 @@ class WaypointUpdater(object):
             forward_waypoints = self.waypoints[closet_waypoint_idx : closet_waypoint_idx + LOOKAHEAD_WPS]
 
             # Set speed for waypoints
-            acceleration_mps2 = ACCELERATION_MPHS * 1.60934 / 3.6  # m/s^2
-            deceleration_mps2 = DECELERATION_MPHS * 1.60934 / 3.6  # m/s^2
-            min_speed_mps = MIN_TARGET_V_MPH * 1.60934 / 3.6  # m/s
-            target_v_ego_mps = TARGET_V_EGO * 1.60934 / 3.6  # m/s
+            acceleration_mps2 = mph2mps(ACCELERATION_MPHS)
+            deceleration_mps2 = mph2mps(DECELERATION_MPHS)
+            min_speed_mps = mph2mps(MIN_TARGET_V_MPH)
             elapsed_time_s = (rospy.get_time() - self.last_timestamp) if self.last_timestamp else 1
             change_in_v_during_acc = acceleration_mps2 * elapsed_time_s
             change_in_v_during_dec = deceleration_mps2 * elapsed_time_s
@@ -166,7 +175,7 @@ class WaypointUpdater(object):
                     # If the car is very far from the traffic light, there is no need to start slowing down
                     # but car may have to accelerate, so increase speed since last speed until target speed is reached
                     forward_waypoints[i].twist.twist.linear.x = min(self.last_speed + change_in_v_during_acc,
-                                                                    target_v_ego_mps)
+                                                                    self.target_velocity_mps)
                 elif (dist_to_traffic_light > STOP_DIST_TRAFFIC_LIGHT):
                     # If the car is within 75m of a traffic light, it should start slowing down
                     forward_waypoints[i].twist.twist.linear.x = max(self.last_speed - change_in_v_during_dec,
