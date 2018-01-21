@@ -20,18 +20,18 @@ class Controller(object):
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
         # Initialise PID Control
-        self.pid_accel = PID(kp=1.0, ki=0.0, kd=0.01, mn=decel_limit, mx=accel_limit)
-        self.pid_steer = PID(kp=0.1, ki=0.01, kd=0.01, mn=-max_steer_angle, mx=max_steer_angle)
+        self.pid_accel = PID(kp=1.5, ki=0.0, kd=0.01, mn=decel_limit, mx=accel_limit)
+        self.pid_steer = PID(kp=0.5, ki=0.0, kd=0.2, mn=-max_steer_angle, mx=max_steer_angle)
         # Lowpass filter for Steering
-        self.lowpass_steering = LowPassFilter(0.09, 0.02)
+        self.lowpass_steering = LowPassFilter(0.00, 0.02)
         #Low pass filter for throttle
-        self.lowpass_throttle = LowPassFilter(0.07, 0.02)
+        self.lowpass_throttle = LowPassFilter(0.00, 0.02)
         # Initialise constants
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity= fuel_capacity
         self.brake_deadband = brake_deadband
         self.wheel_radius = wheel_radius
-        self.DEBUG_STAT = True
+        self.DEBUG_STAT = False
 
     def control(self, twist_cmd, current_velocity, delta_time, cte):
         '''
@@ -53,14 +53,13 @@ class Controller(object):
 
         ### Corrective Steering
         correct_steer = self.pid_steer.step(cte, delta_time)
-        steering_angle_filtered = 1.0 * steering_angle + 0.0 * correct_steer
+        steering_angle_filtered = 1.0 * steering_angle + 0.2 * correct_steer
         steering_angle_filtered = self.lowpass_steering.filt(steering_angle)
 
         # Using PID for Throttle control
         linear_velocity_error = linear_velocity - current_velocity.twist.linear.x
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
-        #a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
-        a_ego_filtered = pid_acceleration
+        a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
 
         # calculate brake force needed if acceleration is not positive
         if a_ego_filtered > 0.0:
