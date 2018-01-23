@@ -143,6 +143,7 @@ class DBWNode(object):
                     cte = calc_steer_cte.get_cte(self.current_position, self.final_waypoints)
                     throttle, brake, steering = self.controller.control(twist_cmd = self.current_twist_cmd,
                                                                         current_velocity = self.current_velocity,
+                                                                        target_velocity = self.final_waypoints[0].twist.twist.linear.x,
                                                                         delta_time = delta_time, cte=cte)
                     # You should only publish the control commands if dbw is enabled
                     self.publish(throttle, brake, steering)

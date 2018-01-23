@@ -33,7 +33,7 @@ class Controller(object):
         self.wheel_radius = wheel_radius
         self.DEBUG_STAT = False
 
-    def control(self, twist_cmd, current_velocity, delta_time, cte):
+    def control(self, twist_cmd, current_velocity, target_velocity, delta_time, cte):
         '''
         Run controller based on current values to determine optimal steering,
         brake and throttle.
@@ -61,8 +61,8 @@ class Controller(object):
         pid_acceleration = self.pid_accel.step(linear_velocity_error, delta_time)
         a_ego_filtered = self.lowpass_throttle.filt(pid_acceleration)
 
-        # calculate brake force needed if acceleration is not positive
-        if a_ego_filtered > 0.0:
+        # calculate brake force needed if acceleration is not positive and target speed is not (close to) zero
+        if a_ego_filtered > 0.0 and target_velocity > 0.05:
             #throttle = a_ego_filtered
             throttle = pid_acceleration
             brake_torque = 0.0 # Ensure brakes are not applied when accelerating

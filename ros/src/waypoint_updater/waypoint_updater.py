@@ -23,9 +23,9 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-MIN_TARGET_V_MPH = 5 # minimum speed for car to approach a red light while coasting (MPH)
+MIN_TARGET_V_MPH = 3 # minimum speed for car to approach a red light while coasting (MPH)
 ACCELERATION_MPHS = 3 # Rate of change in speed when accelerating (MPH per second)
-DECELERATION_MPHS = 7 # Rate of change in speed when decelerating (MPH per second)
+DECELERATION_MPHS = 5 # Rate of change in speed when decelerating (MPH per second)
 STOP_DIST_TRAFFIC_LIGHT = 6 # distance in front of stop line center of car should stop
 
 
@@ -164,7 +164,9 @@ class WaypointUpdater(object):
             elapsed_time_s = (rospy.get_time() - self.last_timestamp) if self.last_timestamp else 1
             change_in_v_during_acc = acceleration_mps2 * elapsed_time_s
             change_in_v_during_dec = deceleration_mps2 * elapsed_time_s
-            breaking_dist_m = self.last_speed * self.last_speed / deceleration_mps2
+
+            # multiplied by 1.1 as a buffer to get a slightly longer breaking distance than what is physically needed
+            breaking_dist_m = self.last_speed * self.last_speed / deceleration_mps2 * 1.1
 
             # Note that the way speed is increased or decreased here is too simplistic since it does not take into
             # account the actual time duration since last update, and the acceleration/deceleration is therefore
