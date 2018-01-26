@@ -45,7 +45,7 @@ class TLClassifier(object):
 
         if USE_CNN:
             light_stat = self.classify_by_cnn(image)
-            if light_stat = 'Red':
+            if light_stat == 'Red':
                 traffic_stat = TrafficLight.RED
         else:
             traffic_stat = self.classify_by_cv(image)
