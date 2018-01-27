@@ -125,6 +125,8 @@ class TLClassifier(object):
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
 
+            self.detection_graph = tf.Graph()
+
             with self.detection_graph.as_default():
                 ObjDet_graph_def = tf.GraphDef()
 
