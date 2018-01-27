@@ -5,11 +5,11 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 
 ## Project Team Members
 
-|  Name                                             | Udacity Account Email Address     |
-|:---------------------------------------:|:---------------------------------------:|
-| Srikanth Narayanan ( Team Lead)  | srikanth.n.narayanan@gmail.com   |
-| Steven De Gryze                            | sdegryze@gmail.com                      |
-| Anthony Allison                              | anthony.w.allison@gmail.com         |
+|  Name                                   | Udacity Account Email Address     |
+|:---------------------------------------:|:---------------------------------:|
+| Srikanth Narayanan ( Team Lead)         | srikanth.n.narayanan@gmail.com    |
+| Steven De Gryze                         | sdegryze@gmail.com                |
+| Anthony Allison                         | anthony.w.allison@gmail.com       |
 
 ## Architecture
 
@@ -19,11 +19,11 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
  
  ## Note to Tester
  
- There are two convolutional neural network model trained to perform traffic light detection.
+ There are two convolutional neural network models trained to perform traffic light detection.
  * sim model which is for simulator traffic light detection
-   * Download the simulation model graph file from [here](https://drive.google.com/open?id=1n80HhRqVogksG1NPu0QZdKQSTI92G_2y) and move it to model folder name sim in the traffic light node "CarND-Capstone/ros/src/tl_detector/light_classification/model/sim_model"
+   * Download the simulation model graph file from [here](https://drive.google.com/open?id=1n80HhRqVogksG1NPu0QZdKQSTI92G_2y) and move it to model folder name `sim` in the traffic light node "CarND-Capstone/ros/src/tl_detector/light_classification/model/sim_model"
  * real model which is used in real world traffic light detection
-   * Download the real world model graph from [here](https://drive.google.com/open?id=1TPs9U6249iEQbeAOtOxrDhHcZ79guDDT) and move it to the model folder name real in the traffic light node "CarND-Capstone/ros/src/tl_detector/light_classification/model/real_model"
+   * Download the real world model graph from [here](https://drive.google.com/open?id=1TPs9U6249iEQbeAOtOxrDhHcZ79guDDT) and move it to the model folder name `real` in the traffic light node "CarND-Capstone/ros/src/tl_detector/light_classification/model/real_model"
 
 
 ## Other Info
