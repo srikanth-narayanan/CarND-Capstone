@@ -46,6 +46,7 @@ class TLClassifier(object):
 
         if USE_CNN:
             light_stat = self.classify_by_cnn(image)
+            rospy.loginfo("returning state %s" % (light_stat))
             if light_stat == 'Red':
                 traffic_stat = TrafficLight.RED
         else:
