@@ -45,10 +45,7 @@ class TLClassifier(object):
         traffic_stat = TrafficLight.UNKNOWN
 
         if USE_CNN:
-            light_stat = self.classify_by_cnn(image)
-            rospy.loginfo("returning state %s" % (light_stat))
-            if light_stat == 'Red':
-                traffic_stat = TrafficLight.RED
+            traffic_stat = self.classify_by_cnn(image)
         else:
             traffic_stat = self.classify_by_cv(image)
 
@@ -115,7 +112,10 @@ class TLClassifier(object):
         for i in range(boxes.shape[0]):
             if scores is None or scores[i] > min_score_thresh:
                 class_name = self.category_index[classes[i]]['name']
-                break
+                if class_name == 'Red':
+                    traffic_stat = TrafficLight.RED
+                else:
+                    traffic_stat = TrafficLight.UNKNOWN
         return class_name
 
     def _initialise_cnn_model(self):
