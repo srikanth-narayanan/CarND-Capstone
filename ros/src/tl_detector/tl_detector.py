@@ -16,7 +16,7 @@ STATE_COUNT_THRESHOLD = 3
 
 # light.state is only provided for debugging purposes and is not available in the real car
 # Set flag to False if you want to use light.state to debug, True if you want to use the real image classification
-USE_CLASSIFICATION = False
+USE_CLASSIFICATION = True
 
 class TLDetector(object):
     def __init__(self):
