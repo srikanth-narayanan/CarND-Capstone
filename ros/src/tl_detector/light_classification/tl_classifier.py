@@ -105,7 +105,7 @@ class TLClassifier(object):
                                                           self.detection_scores,
                                                           self.detection_classes,
                                                           self.num_detections],
-                                                          feed_dict={image_tensor: image_np_expanded})
+                                                          feed_dict={self.image_tensor: image_np_expanded})
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
         classes = np.squeeze(classes).astype(np.int32)
