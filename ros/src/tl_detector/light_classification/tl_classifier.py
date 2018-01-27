@@ -50,7 +50,7 @@ class TLClassifier(object):
         else:
             self.traffic_stat = self.classify_by_cv(image)
 
-        return traffic_stat
+        return self.traffic_stat
 
 
     def classify_by_cv(self, image):
