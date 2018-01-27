@@ -116,7 +116,7 @@ class TLClassifier(object):
                     traffic_stat = TrafficLight.RED
                 else:
                     traffic_stat = TrafficLight.UNKNOWN
-        return class_name
+        return traffic_stat
 
     def _initialise_cnn_model(self):
         '''
