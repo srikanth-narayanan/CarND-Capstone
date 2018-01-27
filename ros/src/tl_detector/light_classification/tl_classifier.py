@@ -15,6 +15,7 @@ class TLClassifier(object):
         self.RED2_LOWER_LIMIT = np.array([160,50,50]) # in HSV
         self.RED2_UPPER_LIMIT = np.array([179,255,255]) # in HSV
         self.circle_stat = False
+        self.traffic_stat = TrafficLight.UNKNOWN
         if USE_CNN:
             #setup model paths
             self.current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -42,12 +43,12 @@ class TLClassifier(object):
         int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        traffic_stat = TrafficLight.UNKNOWN
+        self.traffic_stat = TrafficLight.UNKNOWN
 
         if USE_CNN:
-            traffic_stat = self.classify_by_cnn(image)
+            self.traffic_stat = self.classify_by_cnn(image)
         else:
-            traffic_stat = self.classify_by_cv(image)
+            self.traffic_stat = self.classify_by_cv(image)
 
         return traffic_stat
 
@@ -87,6 +88,7 @@ class TLClassifier(object):
         '''
         Classify based on cnn
         '''
+        traffic_stat = TrafficLight.UNKNOWN
         # Prepare the image
         # Copy image
         new_image = image.copy()
