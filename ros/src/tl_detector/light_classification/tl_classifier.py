@@ -126,26 +126,28 @@ class TLClassifier(object):
             config.gpu_options.allow_growth = True
 
             with self.detection_graph.as_default():
-                self.ObjDet_graph_def = tf.GraphDef()
+                ObjDet_graph_def = tf.GraphDef()
 
                 with tf.gfile.GFile(self.PATH_2_CKPT, 'rb') as fid:
-                    self.serialized_graph = fid.read()
-                    self.ObjDet_graph_def.ParseFromString(self.serialized_graph)
-                    tf.import_graph_def(self.ObjDet_graph_def, name='')
+                    serialized_graph = fid.read()
+                    ObjDet_graph_def.ParseFromString(serialized_graph)
+                    tf.import_graph_def(ObjDet_graph_def, name='')
 
-                self.session = tf.Session(graph=detection_graph, config=config)
+                self.session = tf.Session(graph=self.detection_graph, config=config)
 
             # Definite input and output Tensors for detection_graph
-            self.image_tensor = self.session.graph.get_tensor_by_name('image_tensor:0')
+            self.image_tensor = self.detection_graph.graph.get_tensor_by_name('image_tensor:0')
 
             # Each box represents a part of the image where a particular object was detected.
-            self.detection_boxes = self.session.graph.get_tensor_by_name('detection_boxes:0')
+            self.detection_boxes = self.detection_graph.graph.get_tensor_by_name('detection_boxes:0')
 
             # Each score represent how level of confidence for each of the objects.
             # Score is shown on the result image, together with the class label.
-            self.detection_scores = self.session.graph.get_tensor_by_name('detection_scores:0')
-            self.detection_classes = self.session.graph.get_tensor_by_name('detection_classes:0')
-            self.num_detections = self.session.graph.get_tensor_by_name('num_detections:0')
-        except:
-            rospy.loginfo("Unable to Initialise CNN Model ! Switching to Open CV Classifier")
+            self.detection_scores = self.detection_graph.graph.get_tensor_by_name('detection_scores:0')
+            self.detection_classes = self.detection_graph.graph.get_tensor_by_name('detection_classes:0')
+            self.num_detections = self.detection_graph.graph.get_tensor_by_name('num_detections:0')
+        except Exception as err:
+            rospy.loginfo(str(err))
+            global USE_CNN
             USE_CNN = False
+            rospy.loginfo("Unable to Initialise CNN Model ! Switching to Open CV Classifier")
