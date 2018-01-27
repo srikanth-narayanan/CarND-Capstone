@@ -16,6 +16,13 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 ![Vehicle Architecture](https://github.com/srikanth-narayanan/CarND-Capstone/blob/master/imgs/final-project-ros-graph-v2.png)
 
  For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
+ 
+ ## Note to tester
+ 
+ There are two convolutional neural network model trained to perform traffic light detection.
+ * sim model which is for simulator traffic light detection
+   * Download the simulation model graph file from here and move it to model folder name sim in the traffic light folder 
+ * real model which is used in real world traffic light detection
 
 Please use **one** of the two installation options, either native **or** docker installation.
 
