@@ -138,16 +138,16 @@ class TLClassifier(object):
                 self.session = tf.Session(graph=self.detection_graph, config=config)
 
             # Definite input and output Tensors for detection_graph
-            self.image_tensor = self.detection_graph.graph.get_tensor_by_name('image_tensor:0')
+            self.image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
 
             # Each box represents a part of the image where a particular object was detected.
-            self.detection_boxes = self.detection_graph.graph.get_tensor_by_name('detection_boxes:0')
+            self.detection_boxes = self.detection_graph.get_tensor_by_name('detection_boxes:0')
 
             # Each score represent how level of confidence for each of the objects.
             # Score is shown on the result image, together with the class label.
-            self.detection_scores = self.detection_graph.graph.get_tensor_by_name('detection_scores:0')
-            self.detection_classes = self.detection_graph.graph.get_tensor_by_name('detection_classes:0')
-            self.num_detections = self.detection_graph.graph.get_tensor_by_name('num_detections:0')
+            self.detection_scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
+            self.detection_classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
+            self.num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
         except Exception as err:
             rospy.loginfo(str(err))
             global USE_CNN
