@@ -26,6 +26,8 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
    * Download the real world model graph from [here](https://drive.google.com/open?id=1TPs9U6249iEQbeAOtOxrDhHcZ79guDDT) and move it to the model folder name real in the traffic light node "CarND-Capstone/ros/src/tl_detector/light_classification/model/real_model"
 
 
+## Other Info
+
 Please use **one** of the two installation options, either native **or** docker installation.
 
 ### Native Installation
