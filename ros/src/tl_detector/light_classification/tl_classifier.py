@@ -49,7 +49,7 @@ class TLClassifier(object):
             self.traffic_stat = self.classify_by_cnn(image)
         else:
             self.traffic_stat = self.classify_by_cv(image)
-
+        
         return self.traffic_stat
 
 
