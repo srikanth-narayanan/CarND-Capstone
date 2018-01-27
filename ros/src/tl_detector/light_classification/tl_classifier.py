@@ -3,8 +3,9 @@ import cv2
 import numpy as np
 import os
 import tensorflow as tf
+import rospy
 
-USE_CNN = False
+USE_CNN = True
 
 class TLClassifier(object):
     def __init__(self, sim=True):
@@ -29,6 +30,7 @@ class TLClassifier(object):
                                    2: {'id': 2, 'name': 'Red'},
                                    3: {'id': 3, 'name': 'Yellow'},
                                    4: {'id': 4, 'name': 'off'}}
+            self._initialise_cnn_model()
 
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
