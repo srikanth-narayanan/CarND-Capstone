@@ -66,13 +66,13 @@ class DBWNode(object):
         self.current_position = None
 
 
-        # TODO: Create `TwistController` object
+        # Create `TwistController` object
         self.controller = Controller(vehicle_mass, wheel_radius, wheel_base,
                                      steer_ratio, max_lat_accel,
                                      max_steer_angle, decel_limit,
                                      accel_limit, brake_deadband, fuel_capacity)
 
-        # TODO: Subscribe to all the topics you need to
+        # Subscribe to all the topics you need to
         # Get Drive By Wire Status (Human or Auto)
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.on_receive_dbw_stat, queue_size=1)
 
@@ -94,7 +94,6 @@ class DBWNode(object):
         '''
         Call Back Function when Current Positions is received
         '''
-        # TODO: Implement
         self.current_position = msg.pose # Get Message
 
     def on_receive_waypoints(self, message):
@@ -129,7 +128,7 @@ class DBWNode(object):
         rate = rospy.Rate(50) # 50Hz
         while not rospy.is_shutdown():
 
-            # TODO: Get predicted throttle, brake, and steering using `twist_controller`
+            # Get predicted throttle, brake, and steering using `twist_controller`
             # Calculate Delta time for twist controller is called since instantiantion
             current_time = rospy.get_time()
             delta_time = current_time - self.previous_time

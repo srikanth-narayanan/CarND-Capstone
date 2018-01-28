@@ -9,7 +9,7 @@ USE_CNN = True
 
 class TLClassifier(object):
     def __init__(self, sim=True):
-        #TODO load classifier
+        # load classifier
         self.RED_LOWER_LIMIT = np.array([0,50,50]) # in HSV
         self.RED_UPPER_LIMIT = np.array([10,255,255]) # in HSV
         self.RED2_LOWER_LIMIT = np.array([160,50,50]) # in HSV
@@ -17,7 +17,7 @@ class TLClassifier(object):
         self.circle_stat = False
         self.traffic_stat = TrafficLight.UNKNOWN
         if USE_CNN:
-            #setup model paths
+            # setup model paths
             self.current_dir = os.path.dirname(os.path.realpath(__file__))
             if sim:
                 self.MODEL_PATH = 'model/sim_model/frozen_inference_graph.pb'
@@ -58,7 +58,7 @@ class TLClassifier(object):
         method to classify traffic light by open cv
         returns a light state
         '''
-        #TODO implement light color prediction
+        # implement light color prediction
         traffic_stat = TrafficLight.UNKNOWN
         # Copy image
         new_image = image.copy()

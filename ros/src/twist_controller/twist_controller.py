@@ -15,7 +15,6 @@ class Controller(object):
         '''
         Initialise all controller as needed for calculations
         '''
-        # TODO: Implement
         # Initialise Yaw Control
         self.yaw_control = YawController(wheel_base, steer_ratio, min_speed,
                                          max_lat_accel, max_steer_angle)
@@ -38,7 +37,6 @@ class Controller(object):
         Run controller based on current values to determine optimal steering,
         brake and throttle.
         '''
-        # TODO: Change the arg, kwarg list to suit your needs
         linear_velocity = abs(twist_cmd.twist.linear.x)
         angular_velocity = twist_cmd.twist.angular.z
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import sys
+sys.path.append('../')
+
 import rospy
 from std_msgs.msg import Int32
 from geometry_msgs.msg import PoseStamped, Pose
@@ -7,6 +10,7 @@ from styx_msgs.msg import Lane
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from light_classification.tl_classifier import TLClassifier
+from waypoint_updater.waypoint_updater import calc_dist
 import tf
 import cv2
 import yaml
@@ -64,7 +68,6 @@ class TLDetector(object):
             self.light_classifier = TLClassifier(sim=False)
             rospy.loginfo("Switching to real world classifier model")
 
-        #rospy.spin()
         self.ros_spin()
 
     def ros_spin(self):
@@ -128,15 +131,6 @@ class TLDetector(object):
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
 
-    # TODO (SDG) - identical to function in wp_updater, move to a helpers file
-    def _calc_dist(self, pos1, pos2):
-        '''
-        A helper method to return distance between two waypoints
-        '''
-        dist = math.sqrt((pos1.x - pos2.x)**2 + (pos1.y - pos2.y)**2)
-        return dist
-
-    # TODO (SDG) - identical to function in wp_updater, move to a helpers file
     def get_closest_waypoint(self, pose):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
@@ -150,7 +144,7 @@ class TLDetector(object):
         closest_distance = 999999  # Initialise very high value
         closest_waypoint_idx = 0
         for idx, waypoint in enumerate(self.waypoints.waypoints):
-            temp_dist = self._calc_dist(pose.position, waypoint.pose.pose.position)
+            temp_dist = calc_dist(pose.position, waypoint.pose.pose.position)
             if (temp_dist < closest_distance):
                 closest_distance = temp_dist
                 closest_waypoint_idx = idx
